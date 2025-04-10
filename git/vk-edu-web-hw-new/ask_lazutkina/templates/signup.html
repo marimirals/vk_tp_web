@@ -1,0 +1,58 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content %}
+    <section class="col-lg-9">
+        <div class="container">
+            <div class="auth-container">
+                <div class="card" style="min-height: 600px;">
+                    <div class="card-body">
+                        <h1 class="card-title text-center mb-4">Sign Up</h1>
+                        <form method="post" style="min-height: 600px;">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" value="{{ form.username.value }}" required>
+                                <div class="form-text">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
+                                <div class="form-error">{{ form.username.errors }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ form.email.value }}" required>
+                                <div class="form-error">{{ form.email.errors }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password1" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password1" name="password1" required>
+                                <ul class="form-text">
+                                    <li>Your password can't be too similar to your other personal information.</li>
+                                    <li>Your password must contain at least 8 characters.</li>
+                                    <li>Your password can't be a commonly used password.</li>
+                                    <li>Your password can't be entirely numeric.</li>
+                                </ul>
+                                <div class="form-error">{{ form.password1.errors }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password2" class="form-label">Password confirmation</label>
+                                <input type="password" class="form-control" id="password2" name="password2" required>
+                                <div class="form-text">Enter the same password as before, for verification.</div>
+                                <div class="form-error">{{ form.password2.errors }}</div>
+                            </div>
+                            <button type="submit" class="btn w-100 mb-3 bg-primary">Sign up</button>
+                            <div class="text-center">
+                                Already have an account? <a href="{% url 'login' %}">Log in</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+
+    
+
+
+   
+

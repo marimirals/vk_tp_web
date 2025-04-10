@@ -1,0 +1,177 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    background-color: #151515;
+    font-family: 'Arial', sans-serif;
+    color: #fff;
+}
+
+h1 {
+    font-weight: 600;
+}
+
+h5 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+p {
+    font-size: 14px;
+}
+
+a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.btn {
+    width: 70px;
+    height: 30px;
+    border-radius: 40px;
+    border: none;
+    color: #fff;
+}
+
+.btn:hover {
+    background-color: #001242;
+}
+
+.navbar {
+    font-size: 16px;
+    background-color: #1E1E1E;
+    padding: 15px 0;
+}
+
+.navbar_logo {
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.navbar form {
+    flex-grow: 1;
+    max-width: 400px;
+}
+
+.navbar form .form-control {
+    border-radius: 25px;
+    background-color: #151515;
+    border: none;
+}
+
+.card {
+    color: #fff;
+    background-color: #1E1E1E;
+    height: 170px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
+    .card-text {
+        margin-bottom: 40px;
+    }
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.like-btn {
+    width: 64px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.like-btn.liked {
+    background-color: crimson;
+    color: white;
+}
+
+.idk__what {
+    width: 40px;
+    margin-top: 20px;
+    margin-left: 20px;
+    border-radius: 5px;
+    border: solid 1px ;
+}
+
+.page-link{
+    gap: 10px;
+    border-radius: 3px;
+    border: none;
+    background-color: #1e1e1e;
+    color: #fff;
+}
+
+aside a:hover {
+    text-decoration: underline;
+}
+
+aside h3 {
+    font-family: Arial, sans-serif;
+}
+
+aside div span {
+    font-size: 1rem;
+    margin-right: 5px;
+}
+
+aside div a {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+aside a:hover {
+    text-decoration: underline;
+}
+
+aside h3 {
+    font-family: Arial, sans-serif;
+}
+
+.avatar__photo img {
+    width: 85px;
+    height: 85px;
+    object-fit: cover;
+}
+
+.form-error {
+    color: #dc3545;
+    font-size: 11px;
+    margin-top: 3px;
+}
+        
+.form-text {
+    color: #6c757d;
+}
+textarea {
+    min-height: 200px;
+}
+
+.dark-input {
+    background-color: #151515;
+    color: #fff;
+    border: 1px solid #333;
+}
+
+.dark-input:focus {
+    background-color: #151515;
+    color: #fff;
+    border-color: #555;
+    box-shadow: none;
+}
+
+.btn-submit {
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 25px;
+    border: none;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: #002366;
+}

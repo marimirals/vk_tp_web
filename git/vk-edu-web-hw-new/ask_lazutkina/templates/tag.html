@@ -1,0 +1,14 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content %}
+    <section class="col-lg-9">
+        <h1>Questions tagged <span class="badge bg-primary">{{ tag_name }}</span></h1>
+
+        {% for question in page_obj %}
+            {% include 'layouts/question.html' %}
+        {% endfor %}
+
+        {% include 'layouts/pagination.html' %}
+    </section>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content %}
+    <section class="col-lg-9">
+        
+        {% include 'layouts/question.html' %}
+
+        <div class="answers-section">
+            <h2>Answers</h2>
+            {% for answer in page_obj %}
+                <div class="question-item">
+                    <div class="card card-body">
+                        <div class="d-flex align-items-center">
+                            {% if answer.user.avatar %}
+                                <img src="{{ answer.user.avatar.url }}" alt="Avatar" class="me-5" width="50" height="50">
+                            {% else %}
+                                <img src="{% static 'ava.png' %}" alt="Avatar" class="me-5" width="50" height="50">
+                            {% endif %}
+                            
+                            <div class="content">
+                                <div class="content__name">
+                                    <a href="#">{{ answer.user.username }}</a>
+                                </div>
+                                <div class="content__text">
+                                    <p>{{ answer.text }}</p>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <form method="POST" action="{% url 'like_question' question.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="like-btn {% if question.id in request.session.liked_questions %}liked{% endif %}">
+                                ❤️ {{ question.likes }}
+                            </button>
+                        </form> 
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% include 'layouts/pagination.html' %}    
+
+            <form method="post" >
+                {% csrf_token %}
+                <div class="form-group">
+                    <textarea name="answer" class="form-control dark-input" rows="3" placeholder="Write your answer" style="margin-bottom: 10px;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Answer</button>
+            </form>
+
+        </div>
+    </section>
+{% endblock %}

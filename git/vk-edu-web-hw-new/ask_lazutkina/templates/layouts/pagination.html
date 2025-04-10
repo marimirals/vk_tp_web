@@ -1,0 +1,32 @@
+<nav>
+    <ul class="pagination">
+
+        {# Показываем "Previous", только если не на первой странице #}
+        {% if page_obj.has_previous %}
+            <li class="page-item px-2">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+        {% endif %}
+
+        {# Номера страниц #}
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item px-2 active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% else %}
+                <li class="page-item px-2">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {# Показываем "Next", только если не на последней странице #}
+        {% if page_obj.has_next %}
+            <li class="page-item px-2">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+        {% endif %}
+
+    </ul>
+</nav>
