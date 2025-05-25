@@ -1,11 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from copy import deepcopy
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import Http404
 from django.shortcuts import redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .utils import paginate
 
 QUESTIONS = [
     {
@@ -36,11 +38,8 @@ def get_all_tags():
     return {tag for question in QUESTIONS for tag in question['tags']}
 
 def index(request):
-    paginator = Paginator(QUESTIONS, 10)  
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    all_tags = get_all_tags()  
-    return render(request, 'index.html', {'page_obj': page_obj, 'all_tags': all_tags})
+    page_obj = paginate(QUESTIONS, request, per_page=10)
+    return render(request, 'index.html', {'page_obj': page_obj})
 
 
 def hot(request):
