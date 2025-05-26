@@ -1,24 +1,32 @@
 {% load static %}
-
 <article class="d-flex flex-column">
     <div class="card">
         <div class="card-body d-flex flex-column">
             <div class="row">
                 <div class="col-2">
                     <div class="avatar__photo">
-                        <img src="{% static question.img_path %}" alt="img">
+                        {% if question.author.profile.avatar %}
+                            <img src="{{ question.author.profile.avatar.url }}" alt="Avatar">
+                        {% else %}
+                            <img src="{% static 'img/default_avatar.jpg' %}" alt="Default Avatar">
+                        {% endif %}
                     </div>
-                    <form method="POST" action="{% url 'like_question' question.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="like-btn {% if question.id in request.session.liked_questions %}liked{% endif %}">
-                            ❤️ {{ question.likes }}
+                    {% if user.is_authenticated %}
+                        <button class="like-btn {% if question.is_liked %}liked{% endif %}" 
+                                data-id="{{ question.id }}"
+                                data-type="question">
+                            ❤️ <span class="likes-count">{{ question.likes_count }}</span>
                         </button>
-                    </form>                                       
+                    {% else %}
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="like-btn">
+                            ❤️ {{ question.likes_count }}
+                        </a>
+                    {% endif %}                                   
                 </div>
                 <div class="col d-flex flex-column">
                     <div class="card-text">
                         <h5 class="card-title">
-                            <a href="{% url 'question' question.id %}">
+                            <a href="{{ question.get_absolute_url }}">
                                 {{ question.title }}
                             </a>
                         </h5>
@@ -27,16 +35,15 @@
                     <div class="mt-auto">
                         <div class="row align-items-end">
                             <div class="col">
-                                <a href="{% url 'question' question.id %}">
+                                <a href="{{ question.get_absolute_url }}">
                                     Answers ({{ question.answers_count }})
                                 </a>
                             </div>
                             <div class="col-auto">
                                 <span>Tags:</span>
-                                {% for tag in question.tags %}
-                                    <a href="{% url 'tag' tag %}" class="badge rounded-pill bg-light text-dark">{{ tag }}</a>
+                                {% for tag in question.tags.all %}
+                                    <a href="{% url 'tag' tag.name %}" class="badge rounded-pill bg-light text-dark">{{ tag.name }}</a>
                                 {% endfor %}
-
                             </div>
                         </div>
                     </div>

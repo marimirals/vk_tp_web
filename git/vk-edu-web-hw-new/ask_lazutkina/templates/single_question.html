@@ -12,8 +12,8 @@
                 <div class="question-item">
                     <div class="card card-body">
                         <div class="d-flex align-items-center">
-                            {% if answer.user.avatar %}
-                                <img src="{{ answer.user.avatar.url }}" alt="Avatar" class="me-5" width="50" height="50">
+                            {% if answer.author.profile.avatar %}
+                                <img src="{{ answer.author.profile.avatar.url }}" alt="Avatar" class="me-5" width="50" height="50">
                             {% else %}
                                 <img src="{% static 'ava.png' %}" alt="Avatar" class="me-5" width="50" height="50">
                             {% endif %}
@@ -27,27 +27,21 @@
                                 </div>
                             </div>
                         </div>
-    
-                        <form method="POST" action="{% url 'like_question' question.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="like-btn {% if question.id in request.session.liked_questions %}liked{% endif %}">
-                                ❤️ {{ question.likes }}
-                            </button>
-                        </form> 
+                        <button class="like-button btn btn-outline-danger btn-sm mt-2"
+                                style="width: auto;"
+                                data-id="{{ answer.id }}" data-type="answer"
+                                {% if answer.is_liked %}data-liked="true"{% endif %}>
+                            ❤️ <span class="likes-count">{{ answer.rating }}</span>
+                        </button>
                     </div>
                 </div>
             {% endfor %}
 
             {% include 'layouts/pagination.html' %}    
 
-            <form method="post" >
-                {% csrf_token %}
-                <div class="form-group">
-                    <textarea name="answer" class="form-control dark-input" rows="3" placeholder="Write your answer" style="margin-bottom: 10px;"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Answer</button>
-            </form>
-
         </div>
     </section>
+    <aside class="col-lg-3">
+        {% include 'layouts/popular_tags.html' %}
+    </aside>
 {% endblock %}

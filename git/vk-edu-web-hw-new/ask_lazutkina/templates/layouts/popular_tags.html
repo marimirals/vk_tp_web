@@ -1,24 +1,16 @@
-<aside class="col-lg-3">    
+<aside class="">    
     <section class="mb-4">
         <h3 class="fw-bold">Popular Tags</h3>
         <div class="d-flex flex-wrap gap-2">
-            {% for tag in all_tags %}
-                <a href="{% url 'tag' tag %}" class="badge 
-                    {% if tag == selected_tag %}bg-primary{% else %}bg-light text-dark{% endif %}">
-                    {{ tag }}
+            {% for tag in popular_tags %}  <!-- Используем переданный контекст -->
+                <a href="{% url 'tag' tag.name %}" class="badge 
+                    {% if tag.name == selected_tag %}bg-primary{% else %}bg-light text-dark{% endif %}">
+                    {{ tag.name }}
                 </a>
             {% endfor %}
         </div>
     </section>
-    
     <section>
-        <h3 class="fw-bold">Best Members</h3>
-        <div class="d-flex flex-wrap gap-3">
-            <a href="#" class="text-primary text-decoration-none">Mr. Freeman</a>
-            <a href="#" class="text-primary text-decoration-none">Dr. House</a>
-            <a href="#" class="text-primary text-decoration-none">Bender</a>
-            <a href="#" class="text-primary text-decoration-none">Queen Victoria</a>
-            <a href="#" class="text-primary text-decoration-none">V. Pupkin</a>
-        </div>
+        {% include 'layouts/best_users.html' %}
     </section>
 </aside>
