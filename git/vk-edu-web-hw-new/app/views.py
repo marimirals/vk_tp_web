@@ -9,7 +9,32 @@ from .models import Question, Answer, Tag, Profile, QuestionLike, AnswerLike
 from .utils import paginate
 from django.db.models import Count
 
-# Сайдбар: популярные теги и лучшие участники
+def question_detail(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    user = request.user
+
+    # Проверяем, лайкнул ли пользователь вопрос
+    is_liked = False
+    if user.is_authenticated:
+        is_liked = question.questionlike_set.filter(user=user).exists()
+
+    # Получаем ответы к вопросу
+    answers = question.answers.select_related('author').all()
+
+    # Для каждого ответа помечаем, лайкнул ли его пользователь
+    for answer in answers:
+        answer.is_liked = False
+        if user.is_authenticated:
+            answer.is_liked = answer.answerlike_set.filter(user=user).exists()
+
+    context = {
+        'question': question,
+        'is_liked': is_liked,
+        'page_obj': answers,  # если ты используешь пагинацию, адаптируй под неё
+    }
+    return render(request, 'question_detail.html', context)
+
+
 def get_sidebar_context():
     return {
         'popular_tags': Tag.objects.annotate(num_questions=Count('question')).order_by('-num_questions')[:10],
@@ -59,6 +84,18 @@ def question(request, question_id):
     }
     context.update(get_sidebar_context())
     return render(request, 'single_question.html', context)
+
+@login_required
+def like_answer(request, answer_id):
+    answer = get_object_or_404(Answer, id=answer_id)
+    like, created = AnswerLike.objects.get_or_create(
+        user=request.user,
+        answer=answer
+    )
+    if not created:
+        like.delete()
+    return redirect(request.META.get('HTTP_REFERER', 'index'))
+
 
 def tag(request, tag_name):
     questions = Question.objects.with_details().filter(tags__name=tag_name)

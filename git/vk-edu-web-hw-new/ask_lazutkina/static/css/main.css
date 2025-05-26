@@ -30,7 +30,6 @@ a {
     height: 30px;
     border-radius: 40px;
     border: none;
-    color: #fff;
 }
 
 .btn:hover {
@@ -73,21 +72,6 @@ a {
 
 .card-body {
     padding: 20px;
-}
-
-.like-btn {
-    width: 64px;
-    margin-top: 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.like-btn.liked {
-    background-color: crimson;
-    color: white;
 }
 
 .idk__what {
@@ -251,16 +235,22 @@ textarea {
     color: white!important;
 }
 
-.like-button {
-    display: inline-block;
-    background-color: transparent;
-    border: none;
-    color: #555;
-    font-size: 1rem;
+.like-btn {
+    background-color: white;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 14px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.like-button.liked {
-    color: red;
+.like-btn.liked {
+    background-color: #dc3545;
+    color: white;
     font-weight: bold;
 }

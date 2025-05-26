@@ -20,19 +20,27 @@
                             
                             <div class="content">
                                 <div class="content__name">
-                                    <a href="#">{{ answer.user.username }}</a>
+                                    <a href="#">{{ answer.author.username }}</a>
                                 </div>
                                 <div class="content__text">
                                     <p>{{ answer.text }}</p>
                                 </div>
                             </div>
                         </div>
-                        <button class="like-button btn btn-outline-danger btn-sm mt-2"
-                                style="width: auto;"
-                                data-id="{{ answer.id }}" data-type="answer"
-                                {% if answer.is_liked %}data-liked="true"{% endif %}>
-                            ❤️ <span class="likes-count">{{ answer.rating }}</span>
-                        </button>
+
+                        {% if user.is_authenticated %}
+                            <form action="{% url 'like_answer' answer.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="like-btn {% if answer.is_liked %}liked{% endif %}">
+                                    ❤️ <span class="likes-count">{{ answer.answerlike_set.count }}</span>
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'login' %}?next={{ request.path }}" class="like-btn">
+                                ❤️ {{ answer.answerlike_set.count }}
+                            </a>
+                        {% endif %}
+
                     </div>
                 </div>
             {% endfor %}

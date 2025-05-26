@@ -12,16 +12,18 @@
                         {% endif %}
                     </div>
                     {% if user.is_authenticated %}
-                        <button class="like-btn {% if question.is_liked %}liked{% endif %}" 
-                                data-id="{{ question.id }}"
-                                data-type="question">
-                            ❤️ <span class="likes-count">{{ question.likes_count }}</span>
-                        </button>
+                        <form action="{% url 'like_question' question.id %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="like-btn {% if is_liked %}liked{% endif %}">
+                                ❤️ <span class="likes-count">{{ question.questionlike_set.count }}</span>
+                            
+                            </button>
+                        </form>
                     {% else %}
                         <a href="{% url 'login' %}?next={{ request.path }}" class="like-btn">
-                            ❤️ {{ question.likes_count }}
+                            ❤️ {{ question.questionlike_set.count }}
                         </a>
-                    {% endif %}                                   
+                    {% endif %}
                 </div>
                 <div class="col d-flex flex-column">
                     <div class="card-text">

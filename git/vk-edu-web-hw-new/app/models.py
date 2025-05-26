@@ -74,6 +74,11 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"Answer to {self.question.title} by {self.author.username}"
+    
+    def is_liked_by(self, user):
+        if not user.is_authenticated:
+            return False
+        return self.answerlike_set.filter(user=user).exists()
 
 
 class QuestionLike(models.Model):
