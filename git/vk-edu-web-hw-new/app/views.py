@@ -1,39 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.core.paginator import Paginator
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse
-from django.http import Http404
 from .models import Question, Answer, Tag, Profile, QuestionLike, AnswerLike
 from .utils import paginate
 from django.db.models import Count
-
-def question_detail(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
-    user = request.user
-
-    # Проверяем, лайкнул ли пользователь вопрос
-    is_liked = False
-    if user.is_authenticated:
-        is_liked = question.questionlike_set.filter(user=user).exists()
-
-    # Получаем ответы к вопросу
-    answers = question.answers.select_related('author').all()
-
-    # Для каждого ответа помечаем, лайкнул ли его пользователь
-    for answer in answers:
-        answer.is_liked = False
-        if user.is_authenticated:
-            answer.is_liked = answer.answerlike_set.filter(user=user).exists()
-
-    context = {
-        'question': question,
-        'is_liked': is_liked,
-        'page_obj': answers,  # если ты используешь пагинацию, адаптируй под неё
-    }
-    return render(request, 'question_detail.html', context)
-
+from django.urls import reverse
+from .forms import CustomUserCreationForm
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib.auth.models import User
+from .forms import CustomAuthenticationForm 
+from .forms import ProfileEditForm
 
 def get_sidebar_context():
     return {
@@ -67,16 +43,41 @@ def hot(request):
     context.update(get_sidebar_context())
     return render(request, 'hot.html', context)
 
-def question(request, question_id):
+@login_required
+def question_detail(request, question_id):
     question = get_object_or_404(Question.objects.with_details(), id=question_id)
-    answers = question.answers.all()
+    user = request.user
+
+    if request.method == 'POST':
+        if 'like_answer' in request.POST:
+            answer_id = request.POST.get('answer_id')
+            answer = get_object_or_404(Answer, id=answer_id)
+            AnswerLike.objects.get_or_create(user=user, answer=answer)
+            return redirect('question_detail', question_id=question_id)
+
+        elif 'answer_text' in request.POST:
+            text = request.POST.get('answer_text', '').strip()
+            if text:
+                answer = Answer.objects.create(
+                    question=question,
+                    text=text,
+                    author=user
+                )
+
+                # Посчитаем, на какой странице окажется новый ответ
+                all_answers = question.answers.all().order_by('created_at')
+                answer_index = list(all_answers).index(answer)
+                page_number = answer_index // 5 + 1  # 5 — количество ответов на странице
+
+                # Редиректим на нужную страницу и якорь на ответ
+                return redirect(f"{request.path}?page={page_number}#answer-{answer.id}")
+
+    answers = question.answers.select_related('author').all().order_by('created_at')
     page_obj = paginate(answers, request, per_page=5)
 
-    if request.method == 'POST' and 'like_answer' in request.POST:
-        answer_id = request.POST.get('answer_id')
-        answer = get_object_or_404(Answer, id=answer_id)
-        AnswerLike.objects.get_or_create(user=request.user, answer=answer)
-        return redirect('question', question_id=question_id)
+    # Отметим лайкнутые
+    for answer in page_obj:
+        answer.is_liked = answer.answerlike_set.filter(user=user).exists()
 
     context = {
         'question': question,
@@ -122,46 +123,122 @@ def like_question(request, question_id):
 @login_required
 def ask(request):
     if request.method == 'POST':
-        # Тут должна быть логика создания вопроса
-        pass
+        title = request.POST.get('title', '').strip()
+        text = request.POST.get('text', '').strip()
+        tag_string = request.POST.get('tags', '').strip()
+
+        tag_names = [t.strip() for t in tag_string.split(',') if t.strip()]
+
+        if len(tag_names) > 5:
+            context = {
+                'error': 'You can add up to 5 tags only.',
+                'title': title,
+                'text': text,
+                'tags': tag_string
+            }
+            context.update(get_sidebar_context())
+            return render(request, 'ask.html', context)
+
+        if title and text:
+            question = Question.objects.create(
+                title=title,
+                text=text,
+                author=request.user
+            )
+
+            for name in tag_names:
+                tag, _ = Tag.objects.get_or_create(name=name)
+                question.tags.add(tag)
+
+            return redirect('question_detail', question_id=question.id)
+        else:
+            context = {
+                'error': 'Title and text are required.',
+                'title': title,
+                'text': text,
+                'tags': tag_string
+            }
+            context.update(get_sidebar_context())
+            return render(request, 'ask.html', context)
+
     context = get_sidebar_context()
     return render(request, 'ask.html', context)
 
+
 def signup_view(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            Profile.objects.create(user=user)
-            login(request, user)
-            return redirect('index')
+        form = CustomUserCreationForm(request.POST)
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
+
+    for field in form.fields.values():
+        field.widget.attrs["class"] = "form-control"
+
+    if request.method == 'POST' and form.is_valid():
+        user = form.save()
+        Profile.objects.create(user=user)  # если используешь профиль
+        login(request, user)
+        return redirect('index')  # редирект после успешной регистрации
+
     context = {'form': form}
     context.update(get_sidebar_context())
     return render(request, 'signup.html', context)
 
 def login_view(request):
+    redirect_to = request.GET.get('continue', request.POST.get('continue', reverse('index')))
+
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
+        form = CustomAuthenticationForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('index')
+
+            if not url_has_allowed_host_and_scheme(redirect_to, allowed_hosts={request.get_host()}):
+                redirect_to = reverse('index')
+
+            return redirect(redirect_to)
     else:
-        form = AuthenticationForm()
-    context = {'form': form}
+        form = CustomAuthenticationForm()
+
+    context = {'form': form, 'continue': redirect_to}
     context.update(get_sidebar_context())
     return render(request, 'login.html', context)
 
 @login_required
 def logout_view(request):
+    redirect_to = request.META.get('HTTP_REFERER', 'index')
     logout(request)
-    return redirect('index')
+    
+    if not url_has_allowed_host_and_scheme(redirect_to, allowed_hosts={request.get_host()}):
+        redirect_to = reverse('index')
+    
+    return redirect(redirect_to)
 
 @login_required
-def settings_view(request):
+def edit_profile(request):
+    user = request.user
+
     if request.method == 'POST':
-        # Обновление профиля
-        pass
-    return render(request, 'settings.html', get_sidebar_context())
+        form = ProfileEditForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            context = {
+                'form': ProfileEditForm(instance=user),  # очистить форму после сохранения
+                'success': 'Profile updated successfully',
+                **get_sidebar_context()
+            }
+            return render(request, 'settings.html', context)
+        else:
+            context = {
+                'form': form,
+                **get_sidebar_context()
+            }
+            return render(request, 'settings.html', context)
+    
+    # GET-запрос
+    form = ProfileEditForm(instance=user)
+    context = {
+        'form': form,
+        **get_sidebar_context()
+    }
+    return render(request, 'settings.html', context)

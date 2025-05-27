@@ -28,10 +28,10 @@
                     src="{% if user.profile.avatar %}{{ user.profile.avatar.url }}{% else %}{% static 'img/default_avatar.jpg' %}{% endif %}">
                 <div class="content ms-3">
                     <div class="content__name">
-                        <a href="{% url 'settings' %}">{{ user.username }}</a>
+                        <a href="{% url 'edit_profile' %}">{{ user.username }}</a>
                     </div>
                     <div class="content__links">
-                        <a href="{% url 'settings' %}" class="me-3">Settings</a>
+                        <a href="{% url 'edit_profile' %}" class="me-3">Settings</a>
                         <a href="{% url 'logout' %}">Log out</a>
                     </div>
                 </div>

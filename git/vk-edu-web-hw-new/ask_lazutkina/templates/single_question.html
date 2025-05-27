@@ -9,7 +9,7 @@
         <div class="answers-section">
             <h2>Answers</h2>
             {% for answer in page_obj %}
-                <div class="question-item">
+                <div class="question-item" id="answer-{{ answer.id }}">
                     <div class="card card-body">
                         <div class="d-flex align-items-center">
                             {% if answer.author.profile.avatar %}
@@ -48,6 +48,19 @@
             {% include 'layouts/pagination.html' %}    
 
         </div>
+        <div class="answer-form mt-5">
+            <h3>Write your answer</h3>
+            {% if user.is_authenticated %}
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <textarea name="answer_text" rows="4" class="form-control dark-input" placeholder="Type your answer here..."></textarea>
+                    <button type="submit" class="btn btn-primary mt-2">Submit</button>
+                </form>
+            {% else %}
+                <p><a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to post an answer.</p>
+            {% endif %}
+        </div>
+
     </section>
     <aside class="col-lg-3">
         {% include 'layouts/popular_tags.html' %}
