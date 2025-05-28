@@ -5,10 +5,10 @@ from django.http import JsonResponse
 from django.db.models import Count
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
-
 from .models import Question, Answer, Tag, Profile, QuestionLike, AnswerLike
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileEditForm
 from .utils import paginate
+
 
 def get_sidebar_context():
     return {
@@ -63,6 +63,7 @@ def question_detail(request, question_id):
                 all_answers = question.answers.all().order_by('created_at')
                 answer_index = list(all_answers).index(answer)
                 page_number = answer_index // 5 + 1
+
                 return redirect(f"{request.path}?page={page_number}#answer-{answer.id}")
 
     answers = question.answers.select_related('author').all().order_by('created_at')
@@ -147,12 +148,13 @@ def ask(request):
 
         if title and text:
             question = Question.objects.create(title=title, text=text, author=request.user)
+
             for name in tag_names:
                 tag, _ = Tag.objects.get_or_create(name=name)
                 question.tags.add(tag)
 
             return redirect('question_detail', question_id=question.id)
-
+        
         context = {
             'error': 'Title and text are required.',
             'title': title,
@@ -164,6 +166,7 @@ def ask(request):
 
     context = get_sidebar_context()
     return render(request, 'ask.html', context)
+
 
 def signup_view(request):
     if request.method == 'POST':
@@ -192,8 +195,10 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+
             if not url_has_allowed_host_and_scheme(redirect_to, allowed_hosts={request.get_host()}):
                 redirect_to = reverse('index')
+
             return redirect(redirect_to)
     else:
         form = CustomAuthenticationForm()
@@ -206,8 +211,10 @@ def login_view(request):
 def logout_view(request):
     redirect_to = request.META.get('HTTP_REFERER', 'index')
     logout(request)
+
     if not url_has_allowed_host_and_scheme(redirect_to, allowed_hosts={request.get_host()}):
         redirect_to = reverse('index')
+
     return redirect(redirect_to)
 
 @login_required
@@ -220,6 +227,7 @@ def edit_profile(request):
             form.save()
             context = {
                 'form': ProfileEditForm(instance=user),
+
                 'success': 'Profile updated successfully',
                 **get_sidebar_context()
             }
@@ -248,3 +256,4 @@ def mark_correct_answer(request, answer_id):
         return JsonResponse({'success': True, 'is_correct': True})
 
     return JsonResponse({'error': 'Метод не разрешен'}, status=405)
+
