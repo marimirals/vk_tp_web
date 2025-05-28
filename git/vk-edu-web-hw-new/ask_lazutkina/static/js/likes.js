@@ -1,9 +1,20 @@
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
 
 $(document).ready(function() {
-    // Получаем токен из <meta name="csrf-token" content="{{ csrf_token }}">
-    var csrftoken = $('meta[name="csrf-token"]').attr('content');
-
-    // Обработка клика по кнопке
     $('.mark-correct-btn').click(function() {
         var btn = $(this);
         var answerId = btn.data('answer-id');
@@ -16,11 +27,9 @@ $(document).ready(function() {
             },
             success: function(data) {
                 if (data.success) {
-                    // Переключаем классы кнопки
                     btn.toggleClass('btn-success btn-outline-secondary');
                     btn.data('is-correct', data.is_correct);
 
-                    // Обновляем текст кнопки
                     if (data.is_correct) {
                         btn.html('✓');
                     } else {
@@ -38,8 +47,6 @@ $(document).ready(function() {
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
     document.querySelectorAll('.like-answer-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             const answerId = btn.getAttribute('data-answer-id');
@@ -93,3 +100,41 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// аватарки
+$(document).ready(function() {
+    $('#id_avatar').on('change', function() {
+        var fileInput = this;
+        if (fileInput.files && fileInput.files[0]) {
+            var formData = new FormData();
+            formData.append('avatar', fileInput.files[0]);
+
+            $('.text-danger.mt-2').remove();
+
+            $.ajax({
+                url: '{% url "ajax_update_avatar" %}', 
+                type: 'POST',
+                data: formData,
+                processData: false, 
+                contentType: false,
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                success: function(data) {
+                    if (data.avatar_url) {
+                        $('#avatar_preview').attr('src', data.avatar_url + '?t=' + new Date().getTime());
+                    } else {
+                        $('#avatar_preview').after(
+                            <div class="text-danger mt-2">Что-то пошло не так</div>
+                        );
+                    }
+                },
+                error: function(xhr) {
+                    const errorMessage = xhr.responseJSON?.error || 'Ошибка при загрузке аватара';
+                    $('#avatar_preview').after(
+                        '<div class="text-danger mt-2">${errorMessage}</div>'
+                    );
+                }
+            });
+        }
+    });
+});

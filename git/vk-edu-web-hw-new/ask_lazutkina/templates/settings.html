@@ -13,7 +13,7 @@
                 <div class="alert alert-success">{{ success }}</div>
             {% endif %}
 
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="profile-form">
                 {% csrf_token %}
 
                 <div class="form-group row mb-3">
@@ -37,16 +37,14 @@
                 </div>
 
                 <div class="form-group row mb-4">
-                    <label for="{{ form.avatar.id_for_label }}" class="col-sm-2 col-form-label">Upload avatar</label>
+                    <label for="id_avatar" class="col-sm-2 col-form-label">Upload avatar</label>
                     <div class="col-sm-10">
                         <div class="d-flex align-items-center">
-                            {% if user.profile.avatar %}
-                                <img src="{{ user.profile.avatar.url }}" class="rounded-circle me-3" width="50" height="50" alt="Avatar">
-                            {% else %}
-                                <img src="{% static 'ava.png' %}" class="rounded-circle me-3" width="50" height="50" alt="Avatar">
-                            {% endif %}
+                            <img id="avatar_preview"
+                                 src="{% if user.profile.avatar %}{{ user.profile.avatar.url }}{% else %}{% static 'ava.png' %}{% endif %}"
+                                 class="rounded-circle me-3" width="50" height="50" alt="Avatar">
                             <div class="input-group">
-                                {{ form.avatar }}
+                                <input type="file" id="id_avatar" name="avatar" class="form-control dark-input">
                             </div>
                         </div>
                         {% if form.avatar.errors %}

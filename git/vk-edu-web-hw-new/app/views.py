@@ -8,7 +8,22 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from .models import Question, Answer, Tag, Profile, QuestionLike, AnswerLike
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileEditForm
 from .utils import paginate
+from django.views.decorators.http import require_POST
 
+@login_required
+@require_POST
+def ajax_update_avatar(request):
+    avatar_file = request.FILES.get('avatar')
+    if not avatar_file:
+        return JsonResponse({'error': 'No file uploaded'}, status=400)
+    
+    profile = request.user.profile
+    profile.avatar = avatar_file
+    profile.save()
+    
+    return JsonResponse({
+        'avatar_url': profile.avatar.url
+    })
 
 def get_sidebar_context():
     return {
@@ -179,7 +194,6 @@ def signup_view(request):
 
     if request.method == 'POST' and form.is_valid():
         user = form.save()
-        Profile.objects.create(user=user)
         login(request, user)
         return redirect('index')
 

@@ -1,6 +1,7 @@
-from django.contrib import admin
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 urlpatterns = [
@@ -17,5 +18,6 @@ urlpatterns = [
     path('signup/', views.signup_view, name='signup'),
     path('logout/', views.logout_view, name='logout'),
     path('answer/<int:answer_id>/mark-correct/', views.mark_correct_answer, name='mark_correct_answer'),
-]
+    path('ajax/update-avatar/', views.ajax_update_avatar, name='ajax_update_avatar'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

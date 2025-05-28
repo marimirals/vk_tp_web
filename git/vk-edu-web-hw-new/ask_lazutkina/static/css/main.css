@@ -239,6 +239,7 @@ textarea {
 .like-answer-btn,
 .like-btn,
 .like-question-btn {
+    margin-top: 10px;
     display: inline-flex !important;
     align-items: center;
     gap: 4px;
@@ -288,33 +289,35 @@ textarea {
     padding: 4px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    background-color: #f8f9fa; /* светлый фон (btn-light аналог) */
+    background-color: #f8f9fa; 
     color: #333;
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
-/* При ховере кнопка немного темнее светлого */
 .mark-correct-btn:hover {
+    padding: 4px 10px;
     background-color: #e2e6ea;
     border-color: #adb5bd;
     color: #212529;
 }
 
-/* Зеленая после нажатия (класс btn-success) */
 .mark-correct-btn.btn-success {
+    padding: 4px 10px;
     background-color: #198754;
     border-color: #198754;
     color: white;
 }
 
 .mark-correct-btn.btn-success:hover {
+    padding: 4px 10px;
     background-color: #157347;
     border-color: #146c43;
     color: white;
 }
 
 .badge.bg-success {
+    padding: 4px 10px;
     margin-top: 10px;
     padding: 5px 10px;
 }
