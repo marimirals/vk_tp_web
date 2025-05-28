@@ -70,7 +70,8 @@ class Answer(models.Model):
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     rating = models.IntegerField(default=0)
-
+    is_correct = models.BooleanField(default=False)
+    
     def __str__(self):
         return f"Answer to {self.question.title} by {self.author.username}"
     

@@ -1,3 +1,4 @@
+
 {% extends "layouts/base.html" %}
 {% load static %}
 
@@ -27,20 +28,26 @@
                                 </div>
                             </div>
                         </div>
-
                         {% if user.is_authenticated %}
-                            <form action="{% url 'like_answer' answer.id %}" method="post" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="like-btn {% if answer.is_liked %}liked{% endif %}">
-                                    ❤️ <span class="likes-count">{{ answer.answerlike_set.count }}</span>
-                                </button>
-                            </form>
+                            <button type="button"
+                                    class="like-answer-btn {% if answer.is_liked %}liked{% endif %}"
+                                    data-answer-id="{{ answer.id }}">
+                                ❤️ <span class="likes-count">{{ answer.answerlike_set.count }}</span>
+                            </button>
                         {% else %}
                             <a href="{% url 'login' %}?next={{ request.path }}" class="like-btn">
                                 ❤️ {{ answer.answerlike_set.count }}
                             </a>
                         {% endif %}
-
+                        {% if user == question.author %}
+                            <button type="button"
+                                    class="mark-correct-btn btn btn-sm {% if answer.is_correct %}btn-success{% else %}btn-light{% endif %}"
+                                    data-answer-id="{{ answer.id }}">
+                                ✓
+                            </button>
+                        {% elif answer.is_correct %}
+                            <span class="badge bg-success">✓</span>
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}

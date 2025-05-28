@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
     path('', views.index, name="index"),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('hot', views.hot, name="hot"),
     path('question/<int:question_id>', views.question_detail, name="question"),
     path('tag/<str:tag_name>/', views.tag, name='tag'),
@@ -14,6 +16,6 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('signup/', views.signup_view, name='signup'),
     path('logout/', views.logout_view, name='logout'),
-    path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('answer/<int:answer_id>/mark-correct/', views.mark_correct_answer, name='mark_correct_answer'),
 ]
 

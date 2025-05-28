@@ -235,22 +235,86 @@ textarea {
     color: white!important;
 }
 
-.like-btn {
-    background-color: white;
-    color: #dc3545;
-    border: 1px solid #dc3545;
-    border-radius: 5px;
-    padding: 4px 10px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
+
+.like-answer-btn,
+.like-btn,
+.like-question-btn {
+    display: inline-flex !important;
     align-items: center;
     gap: 4px;
+    padding: 4px 18px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9 !important;
+    color: #333 !important;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+
+    width: auto !important;
+    max-width: fit-content !important;
+    box-sizing: border-box;
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap;
 }
 
-.like-btn.liked {
-    background-color: #dc3545;
-    color: red;
-    font-weight: bold;
+.like-question-btn:hover,
+.like-answer-btn:hover,
+.like-btn:hover {
+    background-color: #e0e0e0;
+    border-color: #999;
+    color: #000;
+}
+
+.like-question-btn.liked,
+.like-answer-btn.liked {
+    background-color: #ffd6d6;
+    border-color: #ff4d4d;
+    color: #a10000;
+}
+
+.like-question-btn.liked:hover,
+.like-answer-btn.liked:hover {
+    background-color: #ffbaba;
+    border-color: #cc0000;
+    color: #800000;
+}
+
+/* Кнопка правильного ответа */
+.mark-correct-btn {
+    margin-top: 10px;
+    padding: 4px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f9fa; /* светлый фон (btn-light аналог) */
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* При ховере кнопка немного темнее светлого */
+.mark-correct-btn:hover {
+    background-color: #e2e6ea;
+    border-color: #adb5bd;
+    color: #212529;
+}
+
+/* Зеленая после нажатия (класс btn-success) */
+.mark-correct-btn.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+.mark-correct-btn.btn-success:hover {
+    background-color: #157347;
+    border-color: #146c43;
+    color: white;
+}
+
+.badge.bg-success {
+    margin-top: 10px;
+    padding: 5px 10px;
 }

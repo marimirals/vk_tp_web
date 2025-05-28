@@ -1,15 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from .models import Question, Answer, Tag, Profile, QuestionLike, AnswerLike
-from .utils import paginate
+from django.http import JsonResponse
 from django.db.models import Count
 from django.urls import reverse
-from .forms import CustomUserCreationForm
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.contrib.auth.models import User
-from .forms import CustomAuthenticationForm 
-from .forms import ProfileEditForm
+
+from .models import Question, Answer, Tag, Profile, QuestionLike, AnswerLike
+from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileEditForm
+from .utils import paginate
 
 def get_sidebar_context():
     return {
@@ -24,11 +23,10 @@ def index(request):
     for q in page_obj.object_list:
         q.is_liked = q.is_liked_by(request.user)
 
-    context = {
-        'page_obj': page_obj,
-    }
+    context = {'page_obj': page_obj}
     context.update(get_sidebar_context())
     return render(request, 'index.html', context)
+
 
 def hot(request):
     questions = Question.objects.with_details().order_by('-rating')
@@ -37,9 +35,7 @@ def hot(request):
     for q in page_obj.object_list:
         q.is_liked = q.is_liked_by(request.user)
 
-    context = {
-        'page_obj': page_obj,
-    }
+    context = {'page_obj': page_obj}
     context.update(get_sidebar_context())
     return render(request, 'hot.html', context)
 
@@ -61,21 +57,17 @@ def question_detail(request, question_id):
                 answer = Answer.objects.create(
                     question=question,
                     text=text,
-                    author=user
+                    author=user,
+                    is_correct=False
                 )
-
-                # Посчитаем, на какой странице окажется новый ответ
                 all_answers = question.answers.all().order_by('created_at')
                 answer_index = list(all_answers).index(answer)
-                page_number = answer_index // 5 + 1  # 5 — количество ответов на странице
-
-                # Редиректим на нужную страницу и якорь на ответ
+                page_number = answer_index // 5 + 1
                 return redirect(f"{request.path}?page={page_number}#answer-{answer.id}")
 
     answers = question.answers.select_related('author').all().order_by('created_at')
     page_obj = paginate(answers, request, per_page=5)
 
-    # Отметим лайкнутые
     for answer in page_obj:
         answer.is_liked = answer.answerlike_set.filter(user=user).exists()
 
@@ -87,20 +79,45 @@ def question_detail(request, question_id):
     return render(request, 'single_question.html', context)
 
 @login_required
-def like_answer(request, answer_id):
-    answer = get_object_or_404(Answer, id=answer_id)
-    like, created = AnswerLike.objects.get_or_create(
-        user=request.user,
-        answer=answer
-    )
+def like_question(request, question_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    question = get_object_or_404(Question, id=question_id)
+    like, created = QuestionLike.objects.get_or_create(user=request.user, question=question)
+
     if not created:
         like.delete()
-    return redirect(request.META.get('HTTP_REFERER', 'index'))
+        liked = False
+    else:
+        liked = True
 
+    likes_count = question.questionlike_set.count()
+    return JsonResponse({'success': True, 'liked': liked, 'likes_count': likes_count})
+
+@login_required
+def like_answer(request, answer_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    answer = get_object_or_404(Answer, id=answer_id)
+    like, created = AnswerLike.objects.get_or_create(user=request.user, answer=answer)
+
+    if not created:
+        like.delete()
+        liked = False
+    else:
+        liked = True
+
+    likes_count = answer.answerlike_set.count()
+    return JsonResponse({'success': True, 'liked': liked, 'likes_count': likes_count})
 
 def tag(request, tag_name):
     questions = Question.objects.with_details().filter(tags__name=tag_name)
     page_obj = paginate(questions, request, per_page=10)
+
+    for q in page_obj.object_list:
+        q.is_liked = q.is_liked_by(request.user)
 
     context = {
         'page_obj': page_obj,
@@ -108,17 +125,6 @@ def tag(request, tag_name):
     }
     context.update(get_sidebar_context())
     return render(request, 'tag.html', context)
-
-@login_required
-def like_question(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
-    like, created = QuestionLike.objects.get_or_create(
-        user=request.user,
-        question=question
-    )
-    if not created:
-        like.delete()
-    return redirect(request.META.get('HTTP_REFERER', 'index'))
 
 @login_required
 def ask(request):
@@ -140,30 +146,24 @@ def ask(request):
             return render(request, 'ask.html', context)
 
         if title and text:
-            question = Question.objects.create(
-                title=title,
-                text=text,
-                author=request.user
-            )
-
+            question = Question.objects.create(title=title, text=text, author=request.user)
             for name in tag_names:
                 tag, _ = Tag.objects.get_or_create(name=name)
                 question.tags.add(tag)
 
             return redirect('question_detail', question_id=question.id)
-        else:
-            context = {
-                'error': 'Title and text are required.',
-                'title': title,
-                'text': text,
-                'tags': tag_string
-            }
-            context.update(get_sidebar_context())
-            return render(request, 'ask.html', context)
+
+        context = {
+            'error': 'Title and text are required.',
+            'title': title,
+            'text': text,
+            'tags': tag_string
+        }
+        context.update(get_sidebar_context())
+        return render(request, 'ask.html', context)
 
     context = get_sidebar_context()
     return render(request, 'ask.html', context)
-
 
 def signup_view(request):
     if request.method == 'POST':
@@ -176,9 +176,9 @@ def signup_view(request):
 
     if request.method == 'POST' and form.is_valid():
         user = form.save()
-        Profile.objects.create(user=user)  # если используешь профиль
+        Profile.objects.create(user=user)
         login(request, user)
-        return redirect('index')  # редирект после успешной регистрации
+        return redirect('index')
 
     context = {'form': form}
     context.update(get_sidebar_context())
@@ -192,10 +192,8 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-
             if not url_has_allowed_host_and_scheme(redirect_to, allowed_hosts={request.get_host()}):
                 redirect_to = reverse('index')
-
             return redirect(redirect_to)
     else:
         form = CustomAuthenticationForm()
@@ -208,10 +206,8 @@ def login_view(request):
 def logout_view(request):
     redirect_to = request.META.get('HTTP_REFERER', 'index')
     logout(request)
-    
     if not url_has_allowed_host_and_scheme(redirect_to, allowed_hosts={request.get_host()}):
         redirect_to = reverse('index')
-    
     return redirect(redirect_to)
 
 @login_required
@@ -223,22 +219,32 @@ def edit_profile(request):
         if form.is_valid():
             form.save()
             context = {
-                'form': ProfileEditForm(instance=user),  # очистить форму после сохранения
+                'form': ProfileEditForm(instance=user),
                 'success': 'Profile updated successfully',
                 **get_sidebar_context()
             }
             return render(request, 'settings.html', context)
         else:
-            context = {
-                'form': form,
-                **get_sidebar_context()
-            }
+            context = {'form': form}
+            context.update(get_sidebar_context())
             return render(request, 'settings.html', context)
-    
-    # GET-запрос
+
     form = ProfileEditForm(instance=user)
-    context = {
-        'form': form,
-        **get_sidebar_context()
-    }
+    context = {'form': form}
+    context.update(get_sidebar_context())
     return render(request, 'settings.html', context)
+
+@login_required
+def mark_correct_answer(request, answer_id):
+    if request.method == 'POST':
+        answer = get_object_or_404(Answer, id=answer_id)
+        if answer.question.author != request.user:
+            return JsonResponse({'error': 'Нет доступа'}, status=403)
+
+        Answer.objects.filter(question=answer.question, is_correct=True).update(is_correct=False)
+        answer.is_correct = True
+        answer.save()
+
+        return JsonResponse({'success': True, 'is_correct': True})
+
+    return JsonResponse({'error': 'Метод не разрешен'}, status=405)
