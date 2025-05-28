@@ -16,7 +16,6 @@
                             {% csrf_token %}
                             <button type="submit" class="like-btn {% if is_liked %}liked{% endif %}">
                                 ❤️ <span class="likes-count">{{ question.questionlike_set.count }}</span>
-                            
                             </button>
                         </form>
                     {% else %}

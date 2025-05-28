@@ -251,6 +251,6 @@ textarea {
 
 .like-btn.liked {
     background-color: #dc3545;
-    color: white;
+    color: red;
     font-weight: bold;
 }
